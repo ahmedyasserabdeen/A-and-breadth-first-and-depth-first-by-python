@@ -1,0 +1,260 @@
+from queue import Queue
+import math
+
+class Cell:
+    def __init__(self, x, y, dir=''):
+        self.x = x
+        self.y = y
+        self.dir = dir
+
+
+# grid = [['.', '#', '.', '#', '.', '#', '#', '#', '.', '.', '#', 'B'],
+#         ['.', '#', '.', '#', '.', '.', '.', '#', '.', '#', '#', '.'],
+#         ['.', '.', '.', '#', '.', '#', '.', '.', '.', '#', '#', '.'],
+#         ['#', '.', '#', '#', '.', '#', '.', '#', '.', '#', '#', '.'],
+#         ['#', '.', '.', '.', '.', '#', '.', '#', '.', '.', '.', '.'],
+#         ['#', '#', '#', '.', '#', '#', '.', '#', '#', '#', '#', '#'],
+#         ['A', '', '.', '.', '#', '#', '.', '.', '.', '.', '.', '.']]
+
+grid = [['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'B'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['A', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.']]
+
+# grid = [['#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'B'],
+#         ['#', '.', '#', '#', '#', '#', '#', '#', '#', '#', '#', '.'],
+#         ['#', '.', '#', '.', '.', '.', '.', '.', '.', '.', '#', '.'],
+#         ['#', '.', '#', '.', '#', '#', '#', '#', '#', '.', '#', '.'],
+#         ['#', '.', '.', '.', '#', '.', '.', '.', '.', '.', '#', '.'],
+#         ['#', '#', '#', '.', '#', '.', '#', '#', '#', '#', '#', '.'],
+#         ['A', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.']]
+
+
+cost = [[45, 27, 30, 10, 27, 28,  3, 31,  1, 45, 38, 44], 
+        [47, 32, 43, 17, 31, 19, 12, 12, 18, 15, 38, 42],
+        [37,  9, 11, 43, 44,  0,  9, 28,  9, 47,  0, 25],
+        [27,  6, 14, 22, 41, 48, 11,  8,  2, 31, 21, 48],
+        [11, 36, 48,  6, 31,  0, 37, 44, 24, 31,  4, 11], 
+        [43,  3, 25, 42, 42, 11, 26, 22, 26, 44, 26, 41], 
+        [42, 25,  7, 37, 35, 12, 33,  5, 42, 25, 20, 48]]
+
+
+
+estiCostTable =[[ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf], 
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf],
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf],
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf],
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf], 
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf], 
+                [ math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf,  math.inf]]
+
+
+def dijkstra(node):
+    q = []
+    estiCostTable[node.y][node.x] = 0
+    q.append(node)
+    while len(q) > 0:
+        n = q.pop(0)
+        for i in range(4):
+            nx = n.x + dx[i]
+            ny = n.y + dy[i]
+            if isValid(nx,ny):
+                if cost[ny][nx] + estiCostTable[n.y][n.x] < estiCostTable[ny][nx]:
+                    estiCostTable[ny][nx] = cost[ny][nx] + estiCostTable[n.y][n.x]
+                    q.append(Cell(nx,ny))
+
+
+def resetVisited():
+    for x in range(width):
+        for y in range(height):
+            if grid[y][x] == 'V':
+                grid[y][x] = '.'
+    
+
+def printGrid():
+    for x in grid:
+        print(x)
+    print()
+
+
+width = len(grid[0])  # 12
+height = len(grid)  # 7
+
+
+def isValid(x, y):
+    return x < width and x >= 0 and y < height and y >= 0
+
+
+def CalculateEstiCost(a, b):
+    return estiCostTable[a.y][a.x]
+    # return abs(a.x - b.x) + abs(a.y - b.y)
+
+
+def CalculateCost(p, estimatedCost = 0):
+    sum = 0
+    for n in p:
+        sum += n[1]
+    return sum + estimatedCost
+
+
+dx = [1, -1, 0, 0]
+dy = [0, 0, 1, -1]
+d = ['R', 'L', 'D', 'U']
+
+
+def bfs(start, stop):
+    q = Queue()
+    q.put([start])
+    while (not q.empty()):
+        path = q.get()
+        node = path[-1]
+
+        if node.x == stop.x and node.y == stop.y:
+            for i in path:
+                print(i.dir, end= ' ')
+            print()
+            return
+
+        grid[node.y][node.x] = 'V'
+        for i in range(4):
+            nx = node.x + dx[i]
+            ny = node.y + dy[i]
+
+            if isValid(nx, ny):
+                if grid[ny][nx] == '#' or grid[ny][nx] == 'V':
+                    continue                    
+                newPath = path.copy()
+                newPath.append(Cell(nx, ny, d[i]))
+                q.put(newPath)
+    print('Unreachable')
+
+
+path = []
+STOP = False
+
+def dfs(u, dist):
+    global STOP
+    if STOP: 
+        return
+    if u.y == dist.y and u.x == dist.x:
+        print(' '.join(path))
+        STOP = True
+        return
+
+    grid[u.y][u.x] = 'V'
+    for i in range(4):
+        nx = u.x + dx[i]
+        ny = u.y + dy[i]
+        if isValid(nx, ny):
+            if grid[ny][nx] != 'V' and grid[ny][nx] != '#':
+                path.append(d[i])
+                dfs(Cell(nx, ny), dist)
+                path.pop()
+
+
+def ucs(start, dist):
+    q = []
+    q.append([[start,0]])
+    while len(q) > 0:
+        q.sort(key=CalculateCost)
+        path = q.pop(0)
+        node = path[-1]
+        if node[0].x == dist.x and node[0].y == dist.y:
+            for i in path:
+                print(i[0].dir, end= ' ')
+            print(' - Cost is ', CalculateCost(path))
+            return
+
+        grid[node[0].y][node[0].x] = 'V'
+
+        for i in range(4):
+            nx = node[0].x + dx[i]
+            ny = node[0].y + dy[i]
+
+            if isValid(nx, ny):
+                if grid[ny][nx] == '#' or grid[ny][nx] == 'V':
+                    continue
+                newPath = path.copy()
+                newPath.append([Cell(nx, ny, d[i]), cost[ny][nx]])
+                q.append(newPath)
+    print('Unreachable')
+
+
+def a_star(start, dist):
+    q = []
+    q.append([[start,0]])
+    while len(q) > 0:
+        q.sort(key= lambda x : CalculateCost(x, CalculateEstiCost(x[-1][0],dist)))
+        path = q.pop(0)
+        node = path[-1]
+        if node[0].x == dist.x and node[0].y == dist.y:
+            for i in path:
+                print(i[0].dir, end= ' ')
+            print(' - Cost is ', CalculateCost(path))
+            return
+
+        grid[node[0].y][node[0].x] = 'V'
+
+        for i in range(4):
+            nx = node[0].x + dx[i]
+            ny = node[0].y + dy[i]
+
+            if isValid(nx, ny):
+                if grid[ny][nx] == '#' or grid[ny][nx] == 'V':
+                    continue
+
+                newPath = path.copy()
+                newPath.append([Cell(nx, ny, d[i]), cost[ny][nx]])
+                q.append(newPath)
+    print('Unreachable')
+
+
+
+start = Cell(0, 0)
+dist = Cell(0, 0)
+
+for x in range(width):
+    for y in range(height):
+        if grid[y][x] == 'A':
+            start.x = x
+            start.y = y
+        if grid[y][x] == 'B':
+            dist.x = x
+            dist.y = y
+
+
+# Pre-calculate Estimated Cost for A* Algorithm
+dijkstra(dist)
+
+print("Depth-First Search: ")
+dfs(start, dist)
+grid[start.y][start.x] = 'A'
+printGrid()
+resetVisited()
+
+
+print("Breadth-First Search: ")
+bfs(start, dist)
+grid[start.y][start.x] = 'A'
+printGrid()
+resetVisited()
+
+
+print("Uniform-Cost Search: ")
+ucs(start, dist)
+grid[start.y][start.x] = 'A'
+printGrid()
+resetVisited()
+
+
+print("A* Search: ")
+a_star(start, dist)
+grid[start.y][start.x] = 'A'
+printGrid()
+
+
+# for i in estiCostTable:
+#     print(i)
